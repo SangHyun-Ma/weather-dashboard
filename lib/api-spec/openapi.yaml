@@ -1,0 +1,192 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.1.0
+  description: API specification
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: weather
+    description: Weather operations
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      description: Returns server health status
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+
+  /weather:
+    get:
+      operationId: getWeather
+      tags: [weather]
+      summary: Get current weather for a city
+      parameters:
+        - name: city
+          in: query
+          required: true
+          schema:
+            type: string
+          description: City name (e.g. Seoul, Tokyo, New York)
+      responses:
+        "200":
+          description: Current weather data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WeatherCurrent"
+        "400":
+          description: Missing or invalid city parameter
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: City not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /weather/forecast:
+    get:
+      operationId: getWeatherForecast
+      tags: [weather]
+      summary: Get 3-day weather forecast for a city
+      parameters:
+        - name: city
+          in: query
+          required: true
+          schema:
+            type: string
+          description: City name (e.g. Seoul, Tokyo, New York)
+      responses:
+        "200":
+          description: 3-day forecast data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WeatherForecast"
+        "400":
+          description: Missing or invalid city parameter
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: City not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+
+    ErrorResponse:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string
+
+    WeatherCurrent:
+      type: object
+      required:
+        - city
+        - country
+        - tempC
+        - feelsLikeC
+        - humidity
+        - windKph
+        - description
+        - icon
+        - isDay
+        - uvIndex
+        - visibilityKm
+      properties:
+        city:
+          type: string
+        country:
+          type: string
+        tempC:
+          type: number
+        feelsLikeC:
+          type: number
+        humidity:
+          type: integer
+        windKph:
+          type: number
+        description:
+          type: string
+        icon:
+          type: string
+        isDay:
+          type: boolean
+        uvIndex:
+          type: number
+        visibilityKm:
+          type: number
+
+    ForecastDay:
+      type: object
+      required:
+        - date
+        - maxTempC
+        - minTempC
+        - avgHumidity
+        - maxWindKph
+        - description
+        - icon
+        - chanceOfRain
+      properties:
+        date:
+          type: string
+        maxTempC:
+          type: number
+        minTempC:
+          type: number
+        avgHumidity:
+          type: integer
+        maxWindKph:
+          type: number
+        description:
+          type: string
+        icon:
+          type: string
+        chanceOfRain:
+          type: integer
+
+    WeatherForecast:
+      type: object
+      required:
+        - city
+        - country
+        - days
+      properties:
+        city:
+          type: string
+        country:
+          type: string
+        days:
+          type: array
+          items:
+            $ref: "#/components/schemas/ForecastDay"
